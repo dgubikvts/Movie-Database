@@ -7,22 +7,41 @@ class MVDB_MovieDatabase
     public function __construct()
     {
         $this->load_dependencies();
+        $this->create_table();
         $this->set_locale();
+        $this->define_admin_hooks();
         $this->register_mvdb_cpt();
+        $this->create_mvdb_cpt_custom_fields();
     }
 
     private function load_dependencies(): void
     {
-        require_once MVDB_PLUGIN . 'includes/class-movie-database-loader.php';
-        require_once MVDB_PLUGIN . 'includes/class-movie-database-i18n.php';
-        require_once MVDB_PLUGIN . 'includes/class-movie-database-cpt-creator.php';
+        require_once MVDB_PLUGIN . 'includes/core/class-movie-database-loader.php';
+        require_once MVDB_PLUGIN . 'includes/core/class-movie-database-i18n.php';
+        require_once MVDB_PLUGIN . 'admin/class-movie-database-admin.php';
+        require_once MVDB_PLUGIN . 'includes/core/class-movie-database-repository.php';
+        require_once MVDB_PLUGIN . 'includes/cpt/class-movie-database-cpt-creator.php';
+        require_once MVDB_PLUGIN . 'includes/cpt/class-movie-database-custom-field-creator.php';
         $this->loader = new MVDB_Loader();
+    }
+
+    private function create_table(): void
+    {
+        $mvdb_repository = new MVDB_Repository();
+        $mvdb_repository->create_table();
     }
 
     private function set_locale(): void
     {
         $mvdb_i18n = new MVDB_i18n();
         $this->loader->add_action('plugins_loaded', $mvdb_i18n, 'mvdb_load_textdomain');
+    }
+
+    private function define_admin_hooks(): void
+    {
+        $mvdb_admin = new MVDB_Admin();
+        $this->loader->add_action('admin_enqueue_scripts', $mvdb_admin, 'enqueue_styles');
+        $this->loader->add_action('admin_enqueue_scripts', $mvdb_admin, 'enqueue_scripts');
     }
 
     private function register_mvdb_cpt(): void
@@ -44,6 +63,13 @@ class MVDB_MovieDatabase
         $mvdb_cpt_creator->register_taxonomy('kategorije', 'Kategorija');
         $this->loader->add_action('init', $mvdb_cpt_creator, 'register');
         $this->loader->add_action('init', $mvdb_cpt_creator->taxonomy, 'register');
+    }
+
+    public function create_mvdb_cpt_custom_fields(): void
+    {
+        $mvdb_custom_field_creator = new MVDB_Custom_Field_Creator();
+        $this->loader->add_action('add_meta_boxes', $mvdb_custom_field_creator, 'create');
+        $this->loader->add_action('save_post_film', $mvdb_custom_field_creator, 'save_custom_fields');
     }
 
     public function run(): void
