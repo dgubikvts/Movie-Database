@@ -12,6 +12,7 @@ class MVDB_MovieDatabase
         $this->define_admin_hooks();
         $this->register_mvdb_cpt();
         $this->create_mvdb_cpt_custom_fields();
+        $this->register_movies_import_cron();
     }
 
     private function load_dependencies(): void
@@ -19,16 +20,20 @@ class MVDB_MovieDatabase
         require_once MVDB_PLUGIN . 'includes/core/class-movie-database-loader.php';
         require_once MVDB_PLUGIN . 'includes/core/class-movie-database-i18n.php';
         require_once MVDB_PLUGIN . 'admin/class-movie-database-admin.php';
-        require_once MVDB_PLUGIN . 'includes/core/class-movie-database-repository.php';
+        require_once MVDB_PLUGIN . 'includes/repository/class-movie-database-movie-repository.php';
+        require_once MVDB_PLUGIN . 'includes/repository/class-movie-database-genre-repository.php';
         require_once MVDB_PLUGIN . 'includes/cpt/class-movie-database-cpt-creator.php';
         require_once MVDB_PLUGIN . 'includes/cpt/class-movie-database-custom-field-creator.php';
+        require_once MVDB_PLUGIN . 'includes/import/class-movie-database-import-movies.php';
         $this->loader = new MVDB_Loader();
     }
 
     private function create_table(): void
     {
-        $mvdb_repository = new MVDB_Repository();
-        $mvdb_repository->create_table();
+        $mvdb_movie_repository = new MVDB_Movie_Repository();
+        $mvdb_genre_repository = new MVDB_Genre_Repository();
+        $mvdb_movie_repository->create_table();
+        $mvdb_genre_repository->create_table();
     }
 
     private function set_locale(): void
@@ -65,11 +70,20 @@ class MVDB_MovieDatabase
         $this->loader->add_action('init', $mvdb_cpt_creator->taxonomy, 'register');
     }
 
-    public function create_mvdb_cpt_custom_fields(): void
+    private function create_mvdb_cpt_custom_fields(): void
     {
         $mvdb_custom_field_creator = new MVDB_Custom_Field_Creator();
         $this->loader->add_action('add_meta_boxes', $mvdb_custom_field_creator, 'create');
         $this->loader->add_action('save_post_film', $mvdb_custom_field_creator, 'save_custom_fields');
+    }
+
+    private function register_movies_import_cron(): void
+    {
+        $mvdb_importer = new MVDB_Import_Movies();
+        $this->loader->add_action('mvdb_import_movies_hook', $mvdb_importer, 'import');
+        if (!wp_next_scheduled('mvdb_import_movies_hook')) {
+            wp_schedule_event(strtotime('midnight'), 'daily', 'mvdb_import_movies_hook');
+        }
     }
 
     public function run(): void

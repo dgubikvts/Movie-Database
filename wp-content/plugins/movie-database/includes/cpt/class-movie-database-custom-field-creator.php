@@ -1,10 +1,10 @@
 <?php
 
-require_once MVDB_PLUGIN . 'includes/core/class-movie-database-repository.php';
+require_once MVDB_PLUGIN . 'includes/repository/class-movie-database-movie-repository.php';
 
 class MVDB_Custom_Field_Creator
 {
-    private MVDB_Repository $repository;
+    private MVDB_Movie_Repository $repository;
 
     public array $fields = [
         'gallery',
@@ -17,7 +17,7 @@ class MVDB_Custom_Field_Creator
 
     public function __construct()
     {
-        $this->repository = new MVDB_Repository();
+        $this->repository = new MVDB_Movie_Repository();
     }
 
     public function create(): void
@@ -49,7 +49,7 @@ class MVDB_Custom_Field_Creator
     {
         foreach ($this->fields as $field) {
             if(!isset($data["mvdb_{$field}"])) continue;
-            $fields[$field] = $this->repository->prepareAttribute($field, sanitize_text_field($data["mvdb_{$field}"]));
+            $fields[$field] = $this->repository->prepareAttribute($field, is_array($data["mvdb_{$field}"]) ? array_map('sanitize_text_field', $data["mvdb_{$field}"]) : sanitize_text_field($data["mvdb_{$field}"]));
         }
 
         return $fields ?? [];

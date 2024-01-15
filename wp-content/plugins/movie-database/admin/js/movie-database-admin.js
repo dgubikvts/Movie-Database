@@ -1,6 +1,5 @@
 jQuery(document).ready(function() {
     let gallery;
-    let trailer;
 
     jQuery('#mvdb_gallery_button').click(function(e) {
         e.preventDefault();
@@ -49,41 +48,6 @@ jQuery(document).ready(function() {
         });
 
         gallery.open();
-    });
-
-    jQuery('#mvdb_trailer_button').click(function(e) {
-        e.preventDefault();
-        if(trailer){
-            trailer.open();
-            return;
-        }
-
-        trailer = wp.media.frames.meta_gallery_frame = wp.media({
-            title: 'Odaberite video trailer',
-            button: { text:  'Sacuvaj' },
-            library: { type: 'video' },
-        });
-
-        trailer.on('open', function() {
-            let selection = trailer.state().get('selection');
-            let id = jQuery('#mvdb_trailer').val();
-            if(id){
-                let attachment = wp.media.attachment(id);
-                attachment.fetch();
-                selection.add(attachment ? [attachment] : []);
-            }
-        });
-
-        trailer.on('select', function() {
-            jQuery('#mvdb_trailer').val(trailer.state().get('selection').models[0].attributes.id);
-        });
-
-        trailer.on('close', function() {
-            let video = `<video controls src='${trailer.state().get('selection').models[0].attributes.url}' id="mvdb_trailer_video" width="200px" height="200px" />`;
-            jQuery('.mvdb_trailer_video').html(video);
-        });
-
-        trailer.open();
     });
 });
 
