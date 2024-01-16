@@ -20,6 +20,7 @@ class MVDB_MovieDatabase
         require_once MVDB_PLUGIN . 'includes/core/class-movie-database-loader.php';
         require_once MVDB_PLUGIN . 'includes/core/class-movie-database-i18n.php';
         require_once MVDB_PLUGIN . 'admin/class-movie-database-admin.php';
+        require_once MVDB_PLUGIN . 'includes/settings/class-movie-database-settings.php';
         require_once MVDB_PLUGIN . 'includes/repository/class-movie-database-movie-repository.php';
         require_once MVDB_PLUGIN . 'includes/repository/class-movie-database-genre-repository.php';
         require_once MVDB_PLUGIN . 'includes/cpt/class-movie-database-cpt-creator.php';
@@ -45,8 +46,10 @@ class MVDB_MovieDatabase
     private function define_admin_hooks(): void
     {
         $mvdb_admin = new MVDB_Admin();
+        $mvdb_settings = new MVDB_Settings();
         $this->loader->add_action('admin_enqueue_scripts', $mvdb_admin, 'enqueue_styles');
         $this->loader->add_action('admin_enqueue_scripts', $mvdb_admin, 'enqueue_scripts');
+        $this->loader->add_action('admin_menu', $mvdb_settings, 'register_mvdb_settings');
     }
 
     private function register_mvdb_cpt(): void

@@ -49,7 +49,6 @@ class MVDB_Import_Movies
                 'release_date' => $movie['release_date'],
                 'genre' => $movie['genre']
             ]);
-            var_dump('done');exit;
         }
     }
 
