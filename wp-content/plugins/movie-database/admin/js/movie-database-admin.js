@@ -49,5 +49,14 @@ jQuery(document).ready(function() {
 
         gallery.open();
     });
+
+    // Dashboard copy shortcode to clipboard
+    jQuery("input[name=mvdb_form_shortcode]").on('click', function(el){
+        let $tempElement = jQuery("<input>");
+        jQuery("body").append($tempElement);
+        $tempElement.val(el.target.value).select();
+        document.execCommand("Copy");
+        $tempElement.remove();
+    });
 });
 

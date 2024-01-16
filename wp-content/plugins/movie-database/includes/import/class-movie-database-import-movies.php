@@ -67,13 +67,13 @@ class MVDB_Import_Movies
 
     private function createMovieIfNotExists(array $data): int
     {
-        $posts = get_posts(['post_status' => 'any', 'post_type' => 'film', 'title' => $data['post_title'], 'fields' => 'ids']);
-        if(isset($posts[0])) {
+        $movies = get_posts(['post_status' => 'any', 'post_type' => 'film', 'title' => $data['post_title'], 'fields' => 'ids']);
+        if(isset($movies[0])) {
             wp_update_post([
-                'ID' => $posts[0],
+                'ID' => $movies[0],
                 'post_content' => $data['post_content']
             ]);
-            return $posts[0];
+            return $movies[0];
         }
         return $this->createMovie($data);
     }

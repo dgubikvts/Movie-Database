@@ -10,9 +10,11 @@ class MVDB_MovieDatabase
         $this->create_table();
         $this->set_locale();
         $this->define_admin_hooks();
+        $this->define_public_hooks();
         $this->register_mvdb_cpt();
         $this->create_mvdb_cpt_custom_fields();
         $this->register_movies_import_cron();
+        $this->register_form();
     }
 
     private function load_dependencies(): void
@@ -20,12 +22,15 @@ class MVDB_MovieDatabase
         require_once MVDB_PLUGIN . 'includes/core/class-movie-database-loader.php';
         require_once MVDB_PLUGIN . 'includes/core/class-movie-database-i18n.php';
         require_once MVDB_PLUGIN . 'admin/class-movie-database-admin.php';
+        require_once MVDB_PLUGIN . 'public/class-movie-database-public.php';
         require_once MVDB_PLUGIN . 'includes/settings/class-movie-database-settings.php';
         require_once MVDB_PLUGIN . 'includes/repository/class-movie-database-movie-repository.php';
         require_once MVDB_PLUGIN . 'includes/repository/class-movie-database-genre-repository.php';
         require_once MVDB_PLUGIN . 'includes/cpt/class-movie-database-cpt-creator.php';
         require_once MVDB_PLUGIN . 'includes/cpt/class-movie-database-custom-field-creator.php';
         require_once MVDB_PLUGIN . 'includes/import/class-movie-database-import-movies.php';
+        require_once MVDB_PLUGIN . 'includes/form/class-movie-database-form.php';
+        require_once MVDB_PLUGIN . 'includes/ajax/class-movie-database-form-ajax.php';
         $this->loader = new MVDB_Loader();
     }
 
@@ -50,6 +55,13 @@ class MVDB_MovieDatabase
         $this->loader->add_action('admin_enqueue_scripts', $mvdb_admin, 'enqueue_styles');
         $this->loader->add_action('admin_enqueue_scripts', $mvdb_admin, 'enqueue_scripts');
         $this->loader->add_action('admin_menu', $mvdb_settings, 'register_mvdb_settings');
+    }
+
+    private function define_public_hooks(): void
+    {
+        $mvdb_public = new MVDB_Public();
+        $this->loader->add_action('wp_enqueue_scripts', $mvdb_public, 'enqueue_styles');
+        $this->loader->add_action('wp_enqueue_scripts', $mvdb_public, 'enqueue_scripts');
     }
 
     private function register_mvdb_cpt(): void
@@ -87,6 +99,15 @@ class MVDB_MovieDatabase
         if (!wp_next_scheduled('mvdb_import_movies_hook')) {
             wp_schedule_event(strtotime('midnight'), 'daily', 'mvdb_import_movies_hook');
         }
+    }
+
+    private function register_form(): void
+    {
+        $mvdb_form = new MVDB_Form();
+        $mvdb_form_ajax = new MVDB_Form_Ajax();
+        $this->loader->add_action('init', $mvdb_form, 'register_shortcode');
+        $this->loader->add_action('wp_ajax_nopriv_mvdb_submit_form', $mvdb_form_ajax, 'submit');
+        $this->loader->add_action('wp_ajax_mvdb_submit_form', $mvdb_form_ajax, 'submit');
     }
 
     public function run(): void

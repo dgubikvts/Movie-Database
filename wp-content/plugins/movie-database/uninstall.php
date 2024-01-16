@@ -19,6 +19,7 @@ function mvdb_delete_plugin(): void
     }
 
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}movie_database");
+    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}movie_genres");
 }
 
 if(!defined('MVDB_VERSION')){
